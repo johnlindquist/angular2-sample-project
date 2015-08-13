@@ -3,10 +3,10 @@ import "reflect-metadata";
 import "zone.js";
 
 import {NgFor, Component, View, bootstrap} from "angular2/angular2";
-import {ShadowDomStrategy, NativeShadowDomStrategy} from "angular2/render";
 import {Http, httpInjectables} from "angular2/http";
-import {RouteConfig, RouterOutlet, RouterLink, Router, routerInjectables} from 'angular2/router';
+import {HashLocationStrategy, LocationStrategy, RouteConfig, RouterOutlet, RouterLink, Router, routerInjectables} from 'angular2/router';
 import {bind, Injectable} from "angular2/di";
+import {EventEmitter, ObservableWrapper} from 'angular2/src/facade/async';
 
 const SERVER = "http://localhost:3000/games";
 
@@ -40,7 +40,6 @@ class GameItem{
 
 
 @Component({
-    appInjector: [httpInjectables],
     selector:"game-list"
 })
 @View({
@@ -50,13 +49,16 @@ class GameItem{
 class GameList{
     games = [];
     constructor(http:Http, public cartService:CartService){
-        http.get(SERVER)
-            .map(response => response.json())
-            .subscribe(games => this.games = games);
+        ObservableWrapper.subscribe(
+            http.get(SERVER),
+            response => this.games = response.json()
+        );
         console.log(this.cartService);
     }
 
     onGameClick(game){
+        console.log("clicked");
+        console.log(game);
         this.cartService.games.push(game);
     }
 }
@@ -74,10 +76,16 @@ class GameList{
     directives: [RouterOutlet, RouterLink],
     templateUrl:`templates/game-store.html`
 })
-class GameStore{}
+class GameStore{
+    onButtonClick(){
+        console.log("Hello world");
+    }
+}
 
 bootstrap(GameStore, [
-    bind(ShadowDomStrategy).toClass(NativeShadowDomStrategy),
+    httpInjectables,
+    routerInjectables,
+    bind(LocationStrategy).toClass(HashLocationStrategy),
     CartService
     ]).then(
     success => console.log(success),

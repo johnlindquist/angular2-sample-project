@@ -5,9 +5,13 @@
 </style>
 
 <nav>
-    <a router-link="home">HOME</a>
-    <a router-link="cart">CART</a>
+    <a [router-link]="['/home']">HOME</a>
+    <a [router-link]="['/cart']">CART</a>
 </nav>
+
+
+<button (click)="onButtonClick()">Click Me</button>
+
 <main>
     <router-outlet></router-outlet>
 </main>
